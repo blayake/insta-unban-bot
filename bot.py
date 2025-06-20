@@ -30,9 +30,6 @@ async def on_ready():
 async def watch(interaction: discord.Interaction, username: str):
     watching[username] = interaction.user.id
     await interaction.response.send_message(f"👀 Now watching @{username} for unban updates.")
-
-bot.tree.add_command(watch)
-
 @tasks.loop(seconds=60)
 async def check_unban():
     to_remove = []
@@ -72,4 +69,17 @@ async def check_unban():
     for username in to_remove:
         watching.pop(username, None)
 
-bot.run(TOKEN)
+@bot.event
+async def on_ready():
+    await bot.tree.sync()
+    print(f"✅ Logged in as {bot.user}")
+    check_unban.start()
+
+@bot.tree.command(name="watch", description="Start watching an Instagram username")
+async def watch(interaction: discord.Interaction, username: str):
+    watching[username] = interaction.user.id
+    await interaction.response.send_message(f"👁 Now watching @{username} for unban!", ephemeral=True)
+
+if __name__ == "__main__":
+    bot.run(TOKEN)
+
